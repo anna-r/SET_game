@@ -1,102 +1,132 @@
 import random
-
+from card_deck import CardDeck
 
 
 def main():
     
     # initialize variable to kick process out of loop 
     loop = 0
-    
-    # call function that builds deck of cards
-    cardDeck = buildCards()
-    #print('There are '+ str(len(cardDeck)) + ' cards in the deck')
+
+    #initialize variable to count the total number of sets that were found
+    set_count = 0
+
+      # Define lists that contain card characteristics THESE LISTS WILL GET PASSED IN
+    colors = ['R', 'G', 'P']  # Red, Green, Purple
+    shapes = ['Ov', 'Di', 'Sg']  # Oval, Diamond, Squiggle
+    fills = ['So', 'St', 'Nf']  # Solid, Stripes, Nofill
+    counts = ['1', '2', '3']
+
+    # instantiate a card deck
+    deck = CardDeck(colors,shapes,fills,counts).build_deck()
+    print(deck)
+
+    print('There are '+ str(len(deck))+ ' cards in the deck')
 
     # select the first 12 cards to start
-    cardsInPlay = drawCards(cardDeck,12)
+    cardsInPlay = drawCards(deck,12)
     print('Current Cards in Play: ')
     print(cardsInPlay)
     
-    pause = input(print('There are '+ str(len(cardDeck)) + ' cards remaining in the deck'))
-    
+    print('There are '+ str(len(deck)) + ' cards remaining in the deck')
 
-    while loop < 2:
-        #***************THIS ISN'T RIGHT. COULD RESULT IN ENDLESS LOOP. NOT SURE HOW TO FIX****************
-        while len(cardDeck)> 3:
-      
-            #build combos
-            comboList = createCombos(cardsInPlay)
+    while loop != 2 or len(deck)>=3 :
+        # build combos
+        comboList = createCombos(cardsInPlay)
+        # if a set was found, foundSet will be a string such as 3_St_G_Di,3_So_G_Ov,3_Nf_G_Ss
+        foundSet = checkForSets(comboList)
 
-            #print(comboList)
-            # if a set was found, foundSet will be a string such as 3_St_G_Di,3_So_G_Ov,3_Nf_G_Ss
-            foundSet = checkForSets(comboList) 
-            
-            # If no sets were found among the current 12 cards
-            #************This gets tricky. At the end you can be appending and selecting the same cards over and over.
-            if foundSet == 'NoSetFound':
-                print('No Set Found') 
-                # append all 12 cards back to the deck
-                print(cardsInPlay)
-                for card in cardsInPlay:
-                    cardDeck.append(card)
-                    
-                # select another 12 cards if the deck is still large enough
-                if len(cardDeck)>= 12:
-                    cardsInPlay = drawCards(cardDeck,12)
-                    print('New Cards In Play:')
-                    pause = input(print(cardsInPlay))
-                else: 
-                    loop = 2
-                
-            # if a set WAS found:
-            else:
-                
-                # use split to turn the 3 card string into a list
-                setList = foundSet.split(',')
-                print('Cards in SET: ' + str(setList))
-                # remove the three cards from Cards In Play
-                for card in setList:
-                    cardsInPlay.remove(card)
-                #pause = input(print('length of cards in play: ' + str(len(cardsInPlay))))
-                
-                
+        # If no sets were found among the cards in play
+        if foundSet == 'NoSetFound':
+            if len(deck) != 0: # if there are still card in the deck
+                print('No Set Found')
                 # select another three cards from the deck
-                threeCards = drawCards(cardDeck,3)
-                print('Three new cards: '+ str(threeCards))
-
-                #append cards to Cards in Play
+                threeCards = drawCards(deck,3)
+                print('Three new cards: ' + str(threeCards))
+                # append cards to Cards in Play so there are now 15 cards in play
                 cardsInPlay.append(threeCards[0])
                 cardsInPlay.append(threeCards[1])
                 cardsInPlay.append(threeCards[2])
-                print('Cards In Play: ' + str(cardsInPlay))
-        
-            stop = input(print('There are '+ str(len(cardDeck)) + ' cards remaining in the deck'))
+            else: # if there are no cards remaining in the deck set flag to exit loop
+                loop = 2
 
-def drawCards(cards,x):   
-    #define empty list that will contain 3 cards
+        # if a set WAS found:
+        else:
+            # use split to turn the 3 card string into a list
+            setList = foundSet.split(',')
+            print('SET found: ' + str(setList))
+            set_count = set_count + 1
+            print('Set count: ' + str(set_count))
+            # remove the three cards from Cards In Play
+            for card in setList:
+                cardsInPlay.remove(card)
+
+            print()
+
+            if len(cardsInPlay) == 9:
+                if len(deck)>=3:
+                    threeCards = drawCards(deck,3)
+                    cardsInPlay.append(threeCards[0])
+                    cardsInPlay.append(threeCards[1])
+                    cardsInPlay.append(threeCards[2])
+                else:
+                    loop += 1
+
+        if loop !=2:
+            print('Cards In Play: ' + str(cardsInPlay))
+            #stop = input(print('There are '+ str(len(deck)) + ' cards remaining in the deck'))
+            print('There are ' + str(len(deck)) + ' cards remaining in the deck')
+            #print(deck)
+
+    print('No SETs found in remaining Cards in Play')
+    print('Total SETs found: ' + str(set_count))
+    #print('Total number of cards remaining in deck: ' + str(len(deck)))
+
+def drawCards(deck,x):
+    #define empty list that will contain x cards
     selectedCards = []
-    
-    # set up a loop that repeats 3 times to pick 3 cards
-    for i in range(0,x):
-        
-        #generate a random number in the range of the indexes of the cards in the array
-        index = random.randint(0,len(cards)-1)    
 
-        #append the card with the randomly generated index to the list of selected cards
-        selectedCards.append(cards[index])
-   
-        # remove the card from the deck - this will be removed from the list
-        # back in main
-        cards.remove(cards[index])
-        
+    # set up a loop that repeats x times to pick x cards and test to make sure it's working correctly
+    for i in range(0,x):
+        assert len(deck) >= 1
+        index = random.randint(0, len(deck) - 1)
+        assert (0 <= index) and (index <= len(deck) - 1)
+
+        num_cards_before = len(deck)
+        expected_card = deck[index]
+        drawn_card = deck.pop(index)
+        num_cards_after = len(deck)
+
+        assert num_cards_before == num_cards_after + 1
+        assert drawn_card == expected_card
+        assert drawn_card not in deck
+
+        num_selected_cards_before = len(selectedCards)
+        selectedCards.append(drawn_card)
+        num_selected_cards_after = len(selectedCards)
+
+        assert num_selected_cards_before == num_selected_cards_after - 1
+        assert drawn_card in selectedCards
+
+        # ANNA'S CODE
+        # #generate a random number in the range of the indexes of the cards in the array
+        # index = random.randint(0,len(deck)-1)
+        # print(deck[index])
+        # # remove the card from the deck - this will be removed from the list in main
+        # deck.remove(deck[index])
+        # print(deck) #take a peek and confirm card was removed
+        # #append the card with the randomly generated index to the list of selected cards
+        # selectedCards.append(deck[index])
+
+    # THIS IS GARRETT'S VERSION
+    # for i in range(0, x):
+    #     index = random.randint(0, len(deck) - 1)
+    #     drawn_card = deck.pop(index)
+    #     selectedCards.append(drawn_card)
+
     return selectedCards
-            
-   
+
 def checkForSets(currentCombos):
  
-    #print('current combos' + str(currentCombos)) 
-    #print()
-    combosChecked = 0
-
     # create trait arrays for each combination of cards within the 12 that are in play
     for combo in currentCombos:
             
@@ -105,11 +135,10 @@ def checkForSets(currentCombos):
         fills = []
         colors = []
         shapes = []
-        traits = []
        
         #turn combo string into a list
         splitCombo = combo.split(',')
-        print('Currently checking this combo: ' + str(splitCombo))
+        #print('Currently checking this combo: ' + str(splitCombo))
         
         #look at cards and put each trait into the appropriate trait list.
         for card in splitCombo:
@@ -132,30 +161,30 @@ def checkForSets(currentCombos):
             shapes.append(shape)
 
        
-        # After all the traits for the cards in a combo are put into trait arrays,
-        # check each trait array to see whether it would or wouldn't be good 
-        # for making a set
+        # After all the traits for the cards in a combo are put into trait arrays, check each trait array
+        # to see whether it be valid for a set.
 
         #check he number of symbols on the cards
         checkSymbolCounts = checkTrait('Counts: ',symbolCounts)
-        print('Symbol Count is: ' + str(checkSymbolCounts))
+        #print('Symbol Count is: ' + str(checkSymbolCounts)) this is good for debugging
         if checkSymbolCounts is True:
             # check the fills on the cards
             checkFills = checkTrait('Fills: ', fills)
-            print('Fills is: ' + str(checkFills))
+            #print('Fills is: ' + str(checkFills))
 
             if checkFills is True:
                 # check the colors on the cards
                 checkColors = checkTrait('Colors: ', colors)
-                print('Colors is: ' + str(checkColors))
+                #print('Colors is: ' + str(checkColors))
 
                 if checkColors is True:
                     # check the shapes on the cards
                     checkShapes = checkTrait('Shapes: ' ,shapes)
-                    print('Shapes is: ' + str(checkShapes))
+                    #print('Shapes is: ' + str(checkShapes))
                       
-        combosChecked += 1
-        print('Combos checked: ' + str(combosChecked))
+        #THESE ARE GOOD FOR DEBUGGING
+        #combosChecked += 1
+        #print('Combos checked: ' + str(combosChecked))
           
         # check if you have a set and return combo if so
         if checkSymbolCounts is True and checkFills is True and checkColors is True and checkShapes is True:
@@ -164,57 +193,53 @@ def checkForSets(currentCombos):
     ## if no sets were found
     return 'NoSetFound'
 
-    stop = print(input('pause'))   
-  
-        
-# Checks all the values for one trait.
+    stop = print(input('pause'))
+
+
 def checkTrait(trait, myTrait):
-        print(trait + str(myTrait))
-        #initialize counters
-        same = 0
-        diff = 0
-        index = 0
-        print(myTrait)
-       
-        #compare all values of the given trait against each other
-        for index in range(0,3):
-            # if you are NOT looking at the last item on the list, compare it to the next item.
-            if index !=2:
-                # otherwise compare it to the next item in list
-                if myTrait[index] == myTrait[index+1]:
-                    same += 1         
-                else:
-                    diff +=1
-            # if you are looking at that last item in the list, compare it to the first
+#Checks all the value for a trait.
+
+    # print(trait + str(myTrait)) THIS IS USEFUL FOR DEBUGGING
+    #initialize counters
+    same = 0
+    diff = 0
+
+    #compare all values of the given trait against each other
+    for index in range(0,3):
+        # if you are NOT looking at the last item on the list, compare it to the next item.
+        if index !=2:
+            # otherwise compare it to the next item in list
+            if myTrait[index] == myTrait[index+1]:
+                same += 1
             else:
-                if myTrait[2]== myTrait[0]:
-                    same +=1
-                else:
-                    diff +=1         
-
-        # this is just for development
-        print('same:' + str(same))
-        print('diff:' + str(diff))
-
-        # determine if this trait is good for a set
-        if same == 3 or diff == 3:
-            traitSet = True
+                diff +=1
+        # if you are looking at that last item in the list, compare it to the first
         else:
-            traitSet = False
+            if myTrait[2]== myTrait[0]:
+                same +=1
+            else:
+                diff +=1
 
-        #return the boolean value
-        return traitSet
-                        
+    # this is just for development
+    #print('same:' + str(same))
+    #print('diff:' + str(diff))
+
+    # determine if this trait is good for a set
+    if same == 3 or diff == 3:
+        traitSet = True
+    else:
+        traitSet = False
+
+    #return the boolean value
+    return traitSet
+
 
 def createCombos(currentCards):
     # initialize and empty array that will contain a copy of currentCards.
     # this is necessary because otherwise whatever you do to currentCards will
     # affect the list back in main
     currentCards_copy = []
-    
-    #create all possible combinations of three cards
-    index = 0
-    
+
     # initialize empy list to hold three letter groups
     combos = []
 
@@ -224,16 +249,14 @@ def createCombos(currentCards):
     
     x = 0
     #create combos
-    #Think in can do with three for loops instead (for x, y, z)...later
     while len(currentCards_copy) > 3:
-        for y in range(1,len(currentCards_copy)):          
+        for y in range(1,len(currentCards_copy)):
             for z in range(y+1,len(currentCards_copy)):
-                combo = currentCards_copy[x] + ',' + currentCards_copy[y] + ',' + currentCards_copy[z]              
+                combo = currentCards_copy[x] + ',' + currentCards_copy[y] + ',' + currentCards_copy[z]
                 #append to list of "cards" in play
                 combos.append(combo)
            
-        # Remove the first element, which will shift everything to left and will have
-        # a new element with index 0
+        # Remove the first element, which will shift everything to left resulting in a new element with index 0
         currentCards_copy.remove(currentCards_copy[0]) 
 
     # create the last combo with the last three cards
@@ -244,34 +267,6 @@ def createCombos(currentCards):
     #print('there are ' + str(len(combos)) + ' possible combinations')
     return(combos)
         
-  
-def buildCards():
-    #Define sets that contain card characteristics
-    colors = ['R','G','P'] #Red, Green, Purple
-    shapes = ['Ov','Di','Sg'] #Oval, Diamond, Squiggle
-    fills = ['So','St','Nf'] #Solid, Stripes, Nofill
-    counts = ['1','2','3'] 
-
-    #Define empty list to hold cards
-    cardList = []
-    # initialize card variable
-    card = 'x_x_x_x'
-    
-    #initialize index for to be used in list
-    index = 0
-
-    #Build set of cards
-    for c in colors:
-        for s in shapes:
-            for f in fills:
-                for x in counts:
-                    # build a card
-                    card  = x + '_' + f + '_' + c +'_'+ s
-                    cardList.append(card)
-                    #print(cardList)
-    print('There are ' + str(len(cardList)) + ' cards in the deck to start')
-    return cardList
-
 
 # call main()
 main()
