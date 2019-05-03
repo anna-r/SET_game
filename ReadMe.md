@@ -45,6 +45,6 @@ SET found: ['1_Nf_P_Sg', '3_Nf_R_Ov', '2_Nf_G_Di']
 Set count: 1
 ```
 
-The first line is all the cards in the deck; each card follows the convention introduced in the background and is given by (Number)_(Shading)_(Color)_(Symbol).
+The first line is all the cards in the deck; each card follows the convention introduced in the background and is given by (Number)\_(Shading)\_(Color)\_(Symbol).
 
-The computer will use its algorithm to find a set from the twelve or fifteen cards in play, and if a set exists, it'll be displayed, otherwise not set found.
+The computer will use its algorithm to find a set from the twelve or fifteen cards in play, and if a set exists, it'll be displayed, otherwise no set found.
